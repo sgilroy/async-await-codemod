@@ -1,0 +1,4 @@
+rules:
+  # Skip autoformatting to allow testing a range of import formats
+  "prettier/prettier": "off"
+  "no-unused-vars": "off"
