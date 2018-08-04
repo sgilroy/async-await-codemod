@@ -18,7 +18,7 @@ module.exports = function transformer(file, api) {
   const funcReturnsPromise = p => {
     const body = p.node.body.body;
     const last = body[body.length - 1];
-    if (last.type !== 'ReturnStatement') {
+    if (!last || last.type !== 'ReturnStatement') {
       return false;
     }
     return isPromiseCall(last.argument);
@@ -49,6 +49,7 @@ module.exports = function transformer(file, api) {
         statement &&
         statement.expression &&
         statement.expression.type === 'CallExpression' &&
+        statement.expression.callee.property &&
         statement.expression.callee.property.name === 'then'
       ) {
         // mark function as containing a Promise Expression
@@ -89,7 +90,6 @@ module.exports = function transformer(file, api) {
 
     // if lastExp is a return, use the argument
     const callExp = lastExp.expression || lastExp.argument || lastExp;
-    let thenCalleeObject;
     if (!callExp) {
       console.log('no return expression', node.type, lastExp.loc);
       return;
@@ -99,6 +99,7 @@ module.exports = function transformer(file, api) {
     node.async = true;
 
     let errorCallBack, callBack;
+    let thenCalleeObject;
     if (callExp.callee.property.name === 'catch') {
       errorCallBack = callExp.arguments[0];
       callBack = callExp.callee.object.arguments[0];
@@ -114,12 +115,10 @@ module.exports = function transformer(file, api) {
 
     // Create await statement
     let awaition;
-    if (callBack.params.length > 0) {
+    if (callBack.params && callBack.params.length > 0) {
       awaition = genAwaitionDeclarator(callBack.params, thenCalleeObject);
     } else {
-      awaition = j.expressionStatement(
-        j.awaitExpression(thenCalleeObject)
-      );
+      awaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
     }
 
     let rest;
@@ -184,26 +183,14 @@ module.exports = function transformer(file, api) {
 
   // TODO: cover more async/await cases
   // TODO: cover .then().finally()
-  // TODO: cover .then().then() chains
+  // TODO: also check for callee chain with eventual .then()
   /*
-
-  function thenChain() {
-    return b().then(c => {
-      return c.d();
-    }).then(e => {
-      return 'end with ' + e;
+  function chainEventualThen() {
+    return Model.find().exec().then(items => {
+      return items.map(item => item.thing);
     });
   }
-
-  to
-
-  async function thenChain() {
-    const c = await b();
-    const e = await c.d();
-    return 'end with ' + e;
-  }
-
-  */
+   */
 
   return root.toSource();
 };
