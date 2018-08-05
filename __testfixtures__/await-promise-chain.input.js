@@ -29,3 +29,17 @@ async function longThenChain() {
 
   return 'end with ' + end;
 }
+
+async function thenCatchChain() {
+  console.log('before');
+
+  // comment about b
+  const e = await b().then(c => {
+    // comment before using c
+    return c.d();
+  }).catch(error => {
+    console.error(error);
+  });
+
+  return 'end with ' + e;
+}

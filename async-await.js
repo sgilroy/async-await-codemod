@@ -105,15 +105,16 @@ module.exports = function transformer(file, api) {
     }
 
     // Replace the function's body with the new content
+    const tryStatements = [
+      ...bodyStatements.slice(0, bodyStatements.length - 1),
+      awaition,
+      ...rest
+    ];
     p.node.body = j.blockStatement(
       errorCallBack
         ? [
             j.tryStatement(
-              j.blockStatement([
-                ...bodyStatements.slice(0, bodyStatements.length - 1),
-                awaition,
-                ...rest
-              ]),
+              j.blockStatement(tryStatements),
               j.catchClause(
                 errorCallBack.params[0],
                 null,
@@ -121,11 +122,7 @@ module.exports = function transformer(file, api) {
               )
             )
           ]
-        : [
-            ...bodyStatements.slice(0, bodyStatements.length - 1),
-            awaition,
-            ...rest
-          ]
+        : tryStatements
     );
 
     return p.node;

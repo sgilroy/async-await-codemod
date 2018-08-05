@@ -34,9 +34,7 @@ module.exports = function transformer(file, api) {
     const blockStatement = node;
 
     // find the body statement and await in this block
-    const {bodyStatement, awaitExpression, declarator} = containsAwaitOnPromise(
-      p
-    );
+    const {bodyStatement, awaitExpression, declarator} = containsAwaitOnPromise(p);
     const expressionIndex = blockStatement.body.indexOf(bodyStatement);
 
     const callExp = awaitExpression.argument;
@@ -64,15 +62,9 @@ module.exports = function transformer(file, api) {
     // Create await statement
     let firstAwaition;
     if (callBack.params.length > 0) {
-      firstAwaition = utils.genAwaitionDeclarator(
-        j,
-        callBack.params,
-        awaitExpression.argument.callee.object
-      );
+      firstAwaition = utils.genAwaitionDeclarator(j, callBack.params, thenCalleeObject);
     } else {
-      firstAwaition = j.expressionStatement(
-        j.awaitExpression(awaitExpression.argument.callee.object)
-      );
+      firstAwaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
     }
 
     let callbackStatements;
@@ -111,13 +103,21 @@ module.exports = function transformer(file, api) {
     }
     const prior = bodyStatements.slice(0, expressionIndex);
     const rest = bodyStatements.slice(expressionIndex + 1);
-    blockStatement.body = [
-      ...prior,
+    const tryStatements = [
       firstAwaition,
       ...callbackStatements.slice(0, callbackStatements.length - 1),
-      bodyStatement,
-      ...rest
+      bodyStatement
     ];
+    blockStatement.body = errorCallBack
+      ? [
+          ...prior,
+          j.tryStatement(
+            j.blockStatement(tryStatements),
+            j.catchClause(errorCallBack.params[0], null, j.blockStatement(errorCallBack.body.body))
+          ),
+          ...rest
+        ]
+      : [...prior, ...tryStatements, ...rest];
 
     return true;
   };
