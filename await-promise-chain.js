@@ -78,6 +78,8 @@ module.exports = function transformer(file, api) {
     let callbackStatements;
     if (callBack.body.type === 'BlockStatement') {
       callbackStatements = callBack.body.body;
+      firstAwaition.comments = bodyStatement.comments;
+      bodyStatement.comments = callbackStatements[callbackStatements.length - 1].comments;
     } else {
       callbackStatements = [j.returnStatement(callBack.body)];
     }
