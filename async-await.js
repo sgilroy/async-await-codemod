@@ -1,19 +1,8 @@
+const utils = require('./lib/utils');
+
 module.exports = function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
-
-  const isPromiseCall = node => {
-    return (
-      node.type === 'CallExpression' &&
-      node.callee.property &&
-      (node.callee.property.name === 'then' ||
-        (node.callee.property.name === 'catch' &&
-          node.callee.object &&
-          node.callee.object.type === 'CallExpression' &&
-          node.callee.object.callee.property &&
-          node.callee.object.callee.property.name === 'then'))
-    );
-  };
 
   const funcReturnsPromise = p => {
     const body = p.node.body.body;
@@ -21,7 +10,7 @@ module.exports = function transformer(file, api) {
     if (!last || last.type !== 'ReturnStatement') {
       return false;
     }
-    return isPromiseCall(last.argument);
+    return utils.isPromiseCall(last.argument);
   };
 
   const arrowReturnsPromise = p => {
@@ -33,10 +22,10 @@ module.exports = function transformer(file, api) {
       if (last.type !== 'ReturnStatement') {
         return false;
       }
-      return isPromiseCall(last.argument);
+      return utils.isPromiseCall(last.argument);
     }
 
-    return isPromiseCall(node.body);
+    return utils.isPromiseCall(node.body);
   };
 
   const funcContainsPromiseExpressionStatement = p => {
@@ -56,19 +45,6 @@ module.exports = function transformer(file, api) {
         return true;
       }
     }
-  };
-
-  const genAwaitionDeclarator = (params, exp) => {
-    let declaratorId;
-    if (params.length > 1) {
-      declaratorId = j.arrayPattern(params);
-    } else {
-      declaratorId = params[0];
-    }
-
-    return j.variableDeclaration('const', [
-      j.variableDeclarator(declaratorId, j.awaitExpression(exp))
-    ]);
   };
 
   const transformFunction = p => {
@@ -116,7 +92,7 @@ module.exports = function transformer(file, api) {
     // Create await statement
     let awaition;
     if (callBack.params && callBack.params.length > 0) {
-      awaition = genAwaitionDeclarator(callBack.params, thenCalleeObject);
+      awaition = utils.genAwaitionDeclarator(j, callBack.params, thenCalleeObject);
     } else {
       awaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
     }

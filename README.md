@@ -58,3 +58,16 @@ of `.then()` to simplify the behavior of using promises synchronously.
 ```sh
 jscodeshift -t async-await-codemod/async-await.js <path>
 ```
+
+#### `async-promise-chain`
+
+Unravels chained promise calls of the style `foo.then().then()` as multiple `await` calls. Note that this changes the
+structure and scope of blocks of code and can thus result in different behavior, such as by variables being in scope
+that otherwise would not.
+
+This should generally be used after the `async-await` codemod, and the changes should be examined and tested carefully
+to avoid unwanted bugs or subtle problems.
+
+```sh
+jscodeshift -t async-await-codemod/async-promise-chain.js <path>
+```
