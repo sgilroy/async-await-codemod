@@ -68,6 +68,11 @@ const makeRequest = async () => {
   return "done";
 };
 
+async function chainEventualThen() {
+  const items = await Model.find().exec();
+  return items.map(item => item.thing);
+}
+
 app.get("/with-return", async function(req, res) {
   try {
     const recipeResponse = await requestPromise(generateBeefFreeRecipeURL());

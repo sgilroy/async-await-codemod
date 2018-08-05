@@ -73,6 +73,12 @@ const makeRequest = () =>
       return "done";
     });
 
+function chainEventualThen() {
+  return Model.find().exec().then(items => {
+    return items.map(item => item.thing);
+  });
+}
+
 app.get("/with-return", function(req, res) {
   return requestPromise(generateBeefFreeRecipeURL()).then(function(recipeResponse) {
     const recipesList = JSON.parse(recipeResponse).results;

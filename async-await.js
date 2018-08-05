@@ -159,14 +159,6 @@ module.exports = function transformer(file, api) {
 
   // TODO: cover more async/await cases
   // TODO: cover .then().finally()
-  // TODO: also check for callee chain with eventual .then()
-  /*
-  function chainEventualThen() {
-    return Model.find().exec().then(items => {
-      return items.map(item => item.thing);
-    });
-  }
-   */
 
   return root.toSource();
 };

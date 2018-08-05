@@ -146,37 +146,9 @@ module.exports = function transformer(file, api) {
   // replaceType(j.VariableDeclarator);
   replaceType(j.BlockStatement);
 
-  // TODO: cover .then().then() chains
-  /*
-
-  function thenChain() {
-    return b().then(c => {
-      return c.d();
-    }).then(e => {
-      return 'end with ' + e;
-    });
-  }
-
-  to
-
-  async function thenChain() {
-    const c = await b();
-    const e = await c.d();
-    return 'end with ' + e;
-  }
-
-  */
-  // TODO: also check for callee chain with eventual .then()
-  /*
-  function chainEventualThen() {
-    return Model.find().exec().then(items => {
-      return items.map(item => item.thing);
-    });
-  }
-   */
-
-  // TODO: allow opt-out of chained promise unravelling, which risks such as masking a global via local variable
-  // TODO: avoid changing behavoir by unravelling a then callback with a conditional return
+  // TODO: handle catch and finally blocks when unravelling
+  // TODO: avoid changing behavior by unravelling a then callback with a conditional return
+  // TODO: avoid changing behavior by unravelling a then with a parameter or local variable which masks a variable in an unravelled block
 
   return root.toSource();
 };
