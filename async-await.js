@@ -92,10 +92,30 @@ module.exports = function transformer(file, api) {
     // Create await statement
     let awaition;
     if (callBack.params && callBack.params.length > 0) {
-      awaition = utils.genAwaitionDeclarator(j, callBack.params, thenCalleeObject);
+      awaition = utils.genAwaitionDeclarator(
+        j,
+        callBack.params,
+        thenCalleeObject
+      );
     } else {
       awaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
     }
+
+    let leadingComments = awaition.leadingComments || [];
+    if (callExp.leadingComments && callExp.leadingComments[0]) {
+      // preserve any comments from the call expression
+      leadingComments = callExp.leadingComments.concat(leadingComments);
+    }
+    if (
+      callExp !== lastExp &&
+      lastExp &&
+      lastExp.leadingComments &&
+      lastExp.leadingComments[0]
+    ) {
+      // preserve any comments from the last statement (generally the return expression)
+      leadingComments = lastExp.leadingComments.concat(leadingComments);
+    }
+    awaition.comments = leadingComments;
 
     let rest;
     if (callBack.body.type === 'BlockStatement') {

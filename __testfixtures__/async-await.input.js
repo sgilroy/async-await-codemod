@@ -110,3 +110,21 @@ app.get("/without-return", function(req, res) {
     console.log(error);
   });
 });
+
+function blurImageData(imageData, radius) {
+  const { height, width } = imageData;
+
+  // comment before return
+  return (
+    // within return expression
+    Promise.resolve(imageData.data.buffer.slice(0))
+      // part of the resolve
+      .then(bufferCopy => makeTransferable(bufferCopy))
+      // chain
+      .then(transferable => promiseBlur(transferable, width, height, radius))
+      // more chaining comments
+      .then(newBuffer => new Uint8ClampedArray(newBuffer))
+      .then(pixels => imageData.data.set(pixels))
+      .then(() => imageData)
+  );
+}
