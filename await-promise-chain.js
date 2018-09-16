@@ -18,8 +18,7 @@ module.exports = function transformer(file, api) {
             if (utils.isPromiseCall(declarator.init.argument)) {
               return {
                 bodyStatement,
-                awaitExpression: declarator.init,
-                declarator
+                awaitExpression: declarator.init
               };
             }
           }
@@ -34,11 +33,12 @@ module.exports = function transformer(file, api) {
     const blockStatement = node;
 
     // find the body statement and await in this block
-    const {bodyStatement, awaitExpression, declarator} = containsAwaitOnPromise(p);
+    const {bodyStatement, awaitExpression} = containsAwaitOnPromise(p);
     const expressionIndex = blockStatement.body.indexOf(bodyStatement);
 
     const callExp = awaitExpression.argument;
     if (!callExp) {
+      // eslint-disable-next-line no-console
       console.log('no argument', node.type, node.loc);
       return;
     }
@@ -62,16 +62,23 @@ module.exports = function transformer(file, api) {
     // Create await statement
     let firstAwaition;
     if (callBack.params.length > 0) {
-      firstAwaition = utils.genAwaitionDeclarator(j, callBack.params, thenCalleeObject);
+      firstAwaition = utils.genAwaitionDeclarator(
+        j,
+        callBack.params,
+        thenCalleeObject
+      );
     } else {
-      firstAwaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
+      firstAwaition = j.expressionStatement(
+        j.awaitExpression(thenCalleeObject)
+      );
     }
 
     let callbackStatements;
     if (callBack.body.type === 'BlockStatement') {
       callbackStatements = callBack.body.body;
       firstAwaition.comments = bodyStatement.comments;
-      bodyStatement.comments = callbackStatements[callbackStatements.length - 1].comments;
+      bodyStatement.comments =
+        callbackStatements[callbackStatements.length - 1].comments;
     } else {
       callbackStatements = [j.returnStatement(callBack.body)];
     }
@@ -81,23 +88,17 @@ module.exports = function transformer(file, api) {
     // if lastExp is a return, use the argument
     const lastExpArgument = lastExp.expression || lastExp.argument || lastExp;
     if (!lastExpArgument) {
+      // eslint-disable-next-line no-console
       console.log('no return expression', node.type, lastExp.loc);
       return;
     }
 
     // transform the existing await expression using the return of the then callback
     awaitExpression.argument = lastExpArgument;
-    // if (declarator) {
-    //   secondAwaition = genAwaitionDeclarator(callBack.params, thenCalleeObject);
-    // } else {
-    //   secondAwaition = j.expressionStatement(
-    //     j.awaitExpression(thenCalleeObject)
-    //   );
-    // }
-    // secondAwaition = bodyStatement;
 
     let bodyStatements = blockStatement.body;
     if (!bodyStatements) {
+      // eslint-disable-next-line no-console
       console.log('no body', node.type, node.loc);
       return;
     }
@@ -113,7 +114,11 @@ module.exports = function transformer(file, api) {
           ...prior,
           j.tryStatement(
             j.blockStatement(tryStatements),
-            j.catchClause(errorCallBack.params[0], null, j.blockStatement(errorCallBack.body.body))
+            j.catchClause(
+              errorCallBack.params[0],
+              null,
+              j.blockStatement(errorCallBack.body.body)
+            )
           ),
           ...rest
         ]

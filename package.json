@@ -17,7 +17,7 @@
   },
   "scripts": {
     "test": "npm run lint && jest",
-    "fix": "npm run eslint --fix & npm run prettier --write & wait",
+    "fix": "npm run eslint -- --fix & npm run prettier -- --write & wait",
     "lint": "npm run eslint & wait",
     "prettier": "prettier -l README.md package.json",
     "eslint": "eslint ."

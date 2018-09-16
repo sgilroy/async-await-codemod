@@ -12,14 +12,14 @@ and the further work of @cassilup https://github.com/cassilup/async-await-codemo
 
 ### Setup & Run
 
-* `npm install -g jscodeshift`
-* `git clone https://github.com/sgilroy/async-await-codemod.git` or download a zip file
+- `npm install -g jscodeshift`
+- `git clone https://github.com/sgilroy/async-await-codemod.git` or download a zip file
   from `https://github.com/sgilroy/async-await-codemod/archive/master.zip`
-* Run `npm install` in the async-await-codemod directory
-  * Alternatively, run [`yarn`](https://yarnpkg.com/) to install in the
+- Run `npm install` in the async-await-codemod directory
+  - Alternatively, run [`yarn`](https://yarnpkg.com/) to install in the
     async-await-codemod directory
-* `jscodeshift -t <codemod-script> <path>`
-* Use the `-d` option for a dry-run and use `-p` to print the output
+- `jscodeshift -t <codemod-script> <path>`
+- Use the `-d` option for a dry-run and use `-p` to print the output
   for comparison
 
 ### async-await
@@ -30,11 +30,10 @@ With promises:
 
 ```js
 function makeRequest() {
-  return getJSON()
-    .then(data => {
-      console.log(data);
-      return "done";
-    });
+  return getJSON().then(data => {
+    console.log(data);
+    return 'done';
+  });
 }
 ```
 
@@ -44,7 +43,7 @@ With async/await:
 async function makeRequestFunction() {
   const data = await getJSON();
   console.log(data);
-  return "done";
+  return 'done';
 }
 ```
 

@@ -58,6 +58,7 @@ module.exports = function transformer(file, api) {
     }
 
     if (!bodyStatements) {
+      // eslint-disable-next-line no-console
       console.log('no body', node.type, node.loc);
       return;
     }
@@ -67,6 +68,7 @@ module.exports = function transformer(file, api) {
     // if lastExp is a return, use the argument
     const callExp = lastExp.expression || lastExp.argument || lastExp;
     if (!callExp) {
+      // eslint-disable-next-line no-console
       console.log('no return expression', node.type, lastExp.loc);
       return;
     }
