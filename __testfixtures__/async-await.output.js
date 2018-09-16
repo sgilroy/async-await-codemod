@@ -123,3 +123,8 @@ async function blurImageData(imageData, radius) {
 
   return imageData;
 }
+
+async function arrayDestructuring() {
+  const [, destructuredArrayElement] = await b();
+  return destructuredArrayElement.d;
+}

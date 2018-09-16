@@ -128,3 +128,9 @@ function blurImageData(imageData, radius) {
       .then(() => imageData)
   );
 }
+
+function arrayDestructuring() {
+  return b().then(([, destructuredArrayElement]) => {
+    return destructuredArrayElement.d;
+  });
+}
