@@ -138,3 +138,8 @@ async function returnsSomethingDone() {
   await promise;
   return doSomething();
 }
+
+async function returnsSomethingDone(options) {
+  await promise;
+  return options.doSomething();
+}

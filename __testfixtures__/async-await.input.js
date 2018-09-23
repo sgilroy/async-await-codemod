@@ -142,3 +142,7 @@ function doesSomethingWithAPromise() {
 function returnsSomethingDone() {
   return promise.then(doSomething);
 }
+
+function returnsSomethingDone(options) {
+  return promise.then(options.doSomething);
+}
