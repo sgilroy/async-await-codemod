@@ -134,3 +134,11 @@ function arrayDestructuring() {
     return destructuredArrayElement.d;
   });
 }
+
+function doesSomethingWithAPromise() {
+  promise.then(doSomething);
+}
+
+function returnsSomethingDone() {
+  return promise.then(doSomething);
+}

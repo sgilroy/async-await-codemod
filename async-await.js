@@ -47,6 +47,25 @@ module.exports = function transformer(file, api) {
     }
   };
 
+  const getRestFromCallBack = (callBack, lastExp) => {
+    let rest;
+    if (callBack.type === 'Identifier') {
+      const callBackCall = j.callStatement(callBack, []);
+      if (lastExp.type === 'ReturnStatement') {
+        // "return promise.then(doSomething)" becomes "return doSomething()"
+        rest = [j.returnStatement(callBackCall.expression)];
+      } else {
+        // "promise.then(doSomething)" becomes "doSomething()"
+        rest = [callBackCall];
+      }
+    } else if (callBack.body.type === 'BlockStatement') {
+      rest = callBack.body.body;
+    } else {
+      rest = [j.returnStatement(callBack.body)];
+    }
+    return rest;
+  };
+
   const transformFunction = p => {
     const node = p.node;
 
@@ -119,12 +138,7 @@ module.exports = function transformer(file, api) {
     }
     awaition.comments = leadingComments;
 
-    let rest;
-    if (callBack.body.type === 'BlockStatement') {
-      rest = callBack.body.body;
-    } else {
-      rest = [j.returnStatement(callBack.body)];
-    }
+    const rest = getRestFromCallBack(callBack, lastExp);
 
     // Replace the function's body with the new content
     const tryStatements = [
@@ -171,6 +185,8 @@ module.exports = function transformer(file, api) {
   };
 
   replaceType(j.FunctionDeclaration);
+  replaceType(j.FunctionDeclaration, funcContainsPromiseExpressionStatement);
+
   replaceType(j.ArrowFunctionExpression, arrowReturnsPromise);
 
   replaceType(j.FunctionExpression, funcContainsPromiseExpressionStatement);

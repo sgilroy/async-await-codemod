@@ -128,3 +128,13 @@ async function arrayDestructuring() {
   const [, destructuredArrayElement] = await b();
   return destructuredArrayElement.d;
 }
+
+async function doesSomethingWithAPromise() {
+  await promise;
+  doSomething();
+}
+
+async function returnsSomethingDone() {
+  await promise;
+  return doSomething();
+}
