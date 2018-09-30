@@ -44,20 +44,9 @@ module.exports = function transformer(file, api) {
     }
 
     // insert a new await prior to this await expression using the callee object of the existing await expression
-    let errorCallBack, callBack;
-    let thenCalleeObject;
-    if (callExp.callee.property.name === 'catch') {
-      errorCallBack = callExp.arguments[0];
-      callBack = callExp.callee.object.arguments[0];
-      thenCalleeObject = callExp.callee.object.callee.object;
-    } else {
-      callBack = callExp.arguments[0];
-      thenCalleeObject = callExp.callee.object;
-
-      if (callExp.arguments[1]) {
-        errorCallBack = callExp.arguments[1];
-      }
-    }
+    let {errorCallBack, callBack, thenCalleeObject} = utils.parseCallExpression(
+      callExp
+    );
 
     // Create await statement
     let firstAwaition;

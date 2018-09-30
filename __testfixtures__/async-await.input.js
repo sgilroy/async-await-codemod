@@ -146,3 +146,21 @@ function returnsSomethingDone() {
 function returnsSomethingDone(options) {
   return promise.then(options.doSomething);
 }
+
+function returnsSomethingDone2(options) {
+  return getPromise(options).then(options.doSomething);
+}
+
+function returnsCallbackResult(options) {
+  return start().getPromise(options).then(getCallback());
+}
+
+function returnsArrayCallbackResult(options) {
+  return start().getPromise[1](options)[2].then(getCallback());
+}
+
+function returnsMultipleParams() {
+  return b().then((x, y) => {
+    return x.foo + y.foo;
+  });
+}

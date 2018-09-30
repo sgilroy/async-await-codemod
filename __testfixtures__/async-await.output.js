@@ -130,16 +130,36 @@ async function arrayDestructuring() {
 }
 
 async function doesSomethingWithAPromise() {
-  await promise;
-  doSomething();
+  const promiseResult = await promise;
+  doSomething(promiseResult);
 }
 
 async function returnsSomethingDone() {
-  await promise;
-  return doSomething();
+  const promiseResult = await promise;
+  return doSomething(promiseResult);
 }
 
 async function returnsSomethingDone(options) {
-  await promise;
-  return options.doSomething();
+  const promiseResult = await promise;
+  return options.doSomething(promiseResult);
+}
+
+async function returnsSomethingDone2(options) {
+  const getPromiseResult = await getPromise(options);
+  return options.doSomething(getPromiseResult);
+}
+
+async function returnsCallbackResult(options) {
+  const getPromiseResult = await start().getPromise(options);
+  return getCallback()(getPromiseResult);
+}
+
+async function returnsArrayCallbackResult(options) {
+  const getPromiseResult = await start().getPromise[1](options)[2];
+  return getCallback()(getPromiseResult);
+}
+
+async function returnsMultipleParams() {
+  const [x, y] = await b();
+  return x.foo + y.foo;
 }

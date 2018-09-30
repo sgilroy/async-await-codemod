@@ -47,15 +47,15 @@ module.exports = function transformer(file, api) {
     }
   };
 
-  const getRestFromCallBack = (callBack, lastExp) => {
+  const getRestFromCallBack = (callBack, lastExp, resultIdentifierName) => {
     let rest;
     if (!callBack.body) {
-      const callBackCall = j.callStatement(callBack, []);
+      const callBackCall = j.callStatement(callBack, [j.identifier(resultIdentifierName)]);
       if (lastExp.type === 'ReturnStatement') {
-        // "return promise.then(doSomething)" becomes "return doSomething()"
+        // "return promise.then(doSomething)" becomes "return doSomething(promiseResult)"
         rest = [j.returnStatement(callBackCall.expression)];
       } else {
-        // "promise.then(doSomething)" becomes "doSomething()"
+        // "promise.then(doSomething)" becomes "doSomething(promiseResult)"
         rest = [callBackCall];
       }
     } else if (callBack.body.type === 'BlockStatement') {
@@ -65,6 +65,19 @@ module.exports = function transformer(file, api) {
     }
     return rest;
   };
+
+  function getCalleeName(thenCalleeObject) {
+    let currentNode = thenCalleeObject;
+    while (currentNode && !currentNode.name) {
+      if (currentNode.property && currentNode.property.type === 'Identifier') {
+        currentNode = currentNode.property;
+      } else {
+        currentNode = currentNode.callee || currentNode.object;
+      }
+    }
+    // if we failed to get a name from iterating on callee/property, fallback to using 'promise'
+    return currentNode ? currentNode.name : 'promise';
+  }
 
   const transformFunction = p => {
     const node = p.node;
@@ -95,31 +108,32 @@ module.exports = function transformer(file, api) {
     // Set function to async
     node.async = true;
 
-    let errorCallBack, callBack;
-    let thenCalleeObject;
-    if (callExp.callee.property.name === 'catch') {
-      errorCallBack = callExp.arguments[0];
-      callBack = callExp.callee.object.arguments[0];
-      thenCalleeObject = callExp.callee.object.callee.object;
-    } else {
-      callBack = callExp.arguments[0];
-      thenCalleeObject = callExp.callee.object;
-
-      if (callExp.arguments[1]) {
-        errorCallBack = callExp.arguments[1];
-      }
-    }
+    let {errorCallBack, callBack, thenCalleeObject} = utils.parseCallExpression(
+      callExp
+    );
+    const calleeName = getCalleeName(thenCalleeObject);
+    // TODO: we should ensure the generated resultIdentifierName is unique because it might conflict with the name of another identifier
+    const resultIdentifierName = calleeName + 'Result';
 
     // Create await statement
     let awaition;
-    if (callBack.params && callBack.params.length > 0) {
+    if (callBack.params) {
+      if (callBack.params.length > 0) {
+        awaition = utils.genAwaitionDeclarator(
+          j,
+          callBack.params,
+          thenCalleeObject
+        );
+      } else {
+        awaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
+      }
+    } else {
+      // no params (and no body), not an inline function, so we can't simply use the body of the callee (?)
       awaition = utils.genAwaitionDeclarator(
         j,
-        callBack.params,
+        [j.identifier(resultIdentifierName)],
         thenCalleeObject
       );
-    } else {
-      awaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
     }
 
     let leadingComments = awaition.leadingComments || [];
@@ -138,7 +152,7 @@ module.exports = function transformer(file, api) {
     }
     awaition.comments = leadingComments;
 
-    const rest = getRestFromCallBack(callBack, lastExp);
+    const rest = getRestFromCallBack(callBack, lastExp, resultIdentifierName);
 
     // Replace the function's body with the new content
     const tryStatements = [
