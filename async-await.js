@@ -50,7 +50,9 @@ module.exports = function transformer(file, api) {
   const getRestFromCallBack = (callBack, lastExp, resultIdentifierName) => {
     let rest;
     if (!callBack.body) {
-      const callBackCall = j.callStatement(callBack, [j.identifier(resultIdentifierName)]);
+      const callBackCall = j.callStatement(callBack, [
+        j.identifier(resultIdentifierName)
+      ]);
       if (lastExp.type === 'ReturnStatement') {
         // "return promise.then(doSomething)" becomes "return doSomething(promiseResult)"
         rest = [j.returnStatement(callBackCall.expression)];

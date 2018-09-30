@@ -143,11 +143,11 @@ function returnsSomethingDone() {
   return promise.then(doSomething);
 }
 
-function returnsSomethingDone(options) {
+function returnsSomethingDone2(options) {
   return promise.then(options.doSomething);
 }
 
-function returnsSomethingDone2(options) {
+function returnsSomethingDone3(options) {
   return getPromise(options).then(options.doSomething);
 }
 

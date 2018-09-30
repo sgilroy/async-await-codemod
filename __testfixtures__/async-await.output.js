@@ -139,12 +139,12 @@ async function returnsSomethingDone() {
   return doSomething(promiseResult);
 }
 
-async function returnsSomethingDone(options) {
+async function returnsSomethingDone2(options) {
   const promiseResult = await promise;
   return options.doSomething(promiseResult);
 }
 
-async function returnsSomethingDone2(options) {
+async function returnsSomethingDone3(options) {
   const getPromiseResult = await getPromise(options);
   return options.doSomething(getPromiseResult);
 }
