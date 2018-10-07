@@ -164,3 +164,5 @@ function returnsMultipleParams() {
     return x.foo + y.foo;
   });
 }
+
+const emptyArrow = () => {};

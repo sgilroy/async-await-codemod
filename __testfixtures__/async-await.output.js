@@ -163,3 +163,5 @@ async function returnsMultipleParams() {
   const [x, y] = await b();
   return x.foo + y.foo;
 }
+
+const emptyArrow = () => {};

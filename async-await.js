@@ -19,7 +19,7 @@ module.exports = function transformer(file, api) {
     if (node.body.type === 'BlockStatement') {
       const body = node.body.body;
       const last = body[body.length - 1];
-      if (last.type !== 'ReturnStatement') {
+      if (!last || last.type !== 'ReturnStatement') {
         return false;
       }
       return utils.isPromiseCall(last.argument);
