@@ -166,3 +166,13 @@ function returnsMultipleParams() {
 }
 
 const emptyArrow = () => {};
+
+function returnUndefined() {
+  return b().then(() => {});
+}
+
+function returnUndefinedChained() {
+  return b().then(() => {}).then(undefinedParam => {
+    return c(undefinedParam);
+  });
+}

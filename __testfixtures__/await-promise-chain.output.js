@@ -43,3 +43,8 @@ async function thenCatchChain() {
 
   return 'end with ' + e;
 }
+
+async function returnUndefinedChained() {
+  const undefinedParam = await b().then(() => {});
+  return c(undefinedParam);
+}

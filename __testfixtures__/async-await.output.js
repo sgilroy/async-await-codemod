@@ -165,3 +165,12 @@ async function returnsMultipleParams() {
 }
 
 const emptyArrow = () => {};
+
+async function returnUndefined() {
+  await b();
+}
+
+async function returnUndefinedChained() {
+  const undefinedParam = await b().then(() => {});
+  return c(undefinedParam);
+}

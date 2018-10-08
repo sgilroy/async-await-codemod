@@ -66,8 +66,10 @@ module.exports = function transformer(file, api) {
     if (callBack.body.type === 'BlockStatement') {
       callbackStatements = callBack.body.body;
       firstAwaition.comments = bodyStatement.comments;
-      bodyStatement.comments =
-        callbackStatements[callbackStatements.length - 1].comments;
+      if (callbackStatements.length > 0) {
+        bodyStatement.comments =
+          callbackStatements[callbackStatements.length - 1].comments;
+      }
     } else {
       callbackStatements = [j.returnStatement(callBack.body)];
     }
@@ -75,10 +77,15 @@ module.exports = function transformer(file, api) {
     // Transform return of callback
     const lastExp = callbackStatements[callbackStatements.length - 1];
     // if lastExp is a return, use the argument
-    const lastExpArgument = lastExp.expression || lastExp.argument || lastExp;
+    const lastExpArgument =
+      lastExp && (lastExp.expression || lastExp.argument || lastExp);
     if (!lastExpArgument) {
       // eslint-disable-next-line no-console
-      console.log('no return expression', node.type, lastExp.loc);
+      console.log(
+        'no return expression',
+        node.type,
+        lastExp ? lastExp.loc : callBack.loc
+      );
       return;
     }
 
