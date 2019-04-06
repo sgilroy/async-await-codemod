@@ -176,3 +176,9 @@ function returnUndefinedChained() {
     return c(undefinedParam);
   });
 }
+
+function spread() {
+  return b().spread((c, d) => {
+    return c(d).e;
+  });
+}

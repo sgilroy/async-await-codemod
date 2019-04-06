@@ -174,3 +174,8 @@ async function returnUndefinedChained() {
   const undefinedParam = await b().then(() => {});
   return c(undefinedParam);
 }
+
+async function spread() {
+  const [c, d] = await b();
+  return c(d).e;
+}

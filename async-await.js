@@ -39,7 +39,8 @@ module.exports = function transformer(file, api) {
         statement.expression &&
         statement.expression.type === 'CallExpression' &&
         statement.expression.callee.property &&
-        statement.expression.callee.property.name === 'then'
+        (statement.expression.callee.property.name === 'then' ||
+          statement.expression.callee.property.name === 'spread')
       ) {
         // mark function as containing a Promise Expression
         return true;
