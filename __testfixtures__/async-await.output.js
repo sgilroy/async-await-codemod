@@ -37,6 +37,15 @@ const functionExpression = async function() {
   return result * 2;
 };
 
+const functionExpressionCatch = async function() {
+  try {
+    const result = await asyncFunc();
+    return result * 2;
+  } catch (error) {
+    return console.error(error);
+  }
+};
+
 async function countUserVotes(userIds) {
   const users = await getUsers(userIds);
   return Promise.reduce(users, async (acc, user) => {
