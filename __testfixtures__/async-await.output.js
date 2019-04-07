@@ -54,7 +54,7 @@ async function countUserVotes(userIds) {
   });
 }
 
-async function detructure(key) {
+async function destructure(key) {
   const { [key]: result } = await asyncFunc();
   return result * 3;
 }
@@ -187,4 +187,48 @@ async function returnUndefinedChained() {
 async function spread() {
   const [c, d] = await b();
   return c(d).e;
+}
+
+async function conflictingVariableName() {
+  const c = 'first';
+  const c2 = await b();
+  return c2.d;
+}
+
+async function conflictingVariableNames() {
+  const c = 'first';
+  const c2 = await b();
+
+  // second
+  const c3 = await c2.second();
+
+  // third
+  return c3.third();
+}
+
+async function conflictingVariableNamesWithShadowParam() {
+  const c = 'first';
+  const c2 = await b();
+
+  // second
+  const c3 = await c2.second();
+
+  // third
+  return c3.third(c => {
+    c.other();
+  });
+}
+
+async function conflictingVariableNamesWithShadowDeclaration() {
+  const c = 'first';
+  const c2 = await b();
+
+  // second
+  const c3 = await c2.second();
+
+  // third
+  return c3.third(() => {
+    const c = get();
+    c.other();
+  });
 }

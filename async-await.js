@@ -82,6 +82,131 @@ module.exports = function transformer(file, api) {
     return currentNode ? currentNode.name : 'promise';
   }
 
+  /**
+   * Recursively walks up the path to find the names of all declarations in scope
+   * @param {Path} p
+   * @param {Array<String>} [names]
+   * @return {Array<String>}
+   */
+  function getNames(p, names = []) {
+    if (p && p.value && p.value.body && p.value.body.body) {
+      for (const node of p.value.body.body) {
+        if (node.declarations) {
+          for (const declaration of node.declarations) {
+            if (declaration.id && declaration.id.name) {
+              names.push(declaration.id.name);
+            }
+          }
+        }
+        if (node.id && node.id.name) {
+          names.push(node.id.name);
+        }
+      }
+    }
+
+    if (p.parentPath) {
+      return getNames(p.parentPath, names);
+    } else {
+      return names;
+    }
+  }
+
+  const suffixLimit = 9;
+  function getUniqueName(namesInScope, param) {
+    let safeName,
+      name = param.name;
+    if (!name) {
+      return;
+    }
+    let i = 1;
+    do {
+      if (!namesInScope.includes(name)) {
+        safeName = name;
+      } else {
+        i++;
+        name = param.name + i;
+      }
+    } while (!safeName && i < suffixLimit);
+
+    return safeName;
+  }
+
+  function renameParam(p, parent, param, newName) {
+    const rootScope = p.scope;
+    const oldName = param.name;
+
+    // rename usages of the param
+    // this borrows heavily from the renameTo transform from VariableDeclarator in jscodeshift
+    j(parent)
+      .find(j.Identifier, {name: oldName})
+      .filter(function(path) {
+        // ignore non-variables
+        const parent = path.parent.node;
+
+        if (
+          j.MemberExpression.check(parent) &&
+          parent.property === path.node &&
+          !parent.computed
+        ) {
+          // obj.oldName
+          return false;
+        }
+
+        if (
+          j.Property.check(parent) &&
+          parent.key === path.node &&
+          !parent.computed
+        ) {
+          // { oldName: 3 }
+          return false;
+        }
+
+        if (
+          j.MethodDefinition.check(parent) &&
+          parent.key === path.node &&
+          !parent.computed
+        ) {
+          // class A { oldName() {} }
+          return false;
+        }
+
+        if (
+          j.JSXAttribute.check(parent) &&
+          parent.name === path.node &&
+          !parent.computed
+        ) {
+          // <Foo oldName={oldName} />
+          return false;
+        }
+
+        return true;
+      })
+      .forEach(function(path) {
+        let scope = path.scope;
+        while (scope && scope !== rootScope) {
+          if (scope.declares(oldName)) {
+            return;
+          }
+          scope = scope.parent;
+        }
+
+        // identifier must refer to declared variable
+        // It may look like we filtered out properties,
+        // but the filter only ignored property "keys", not "value"s
+        // In shorthand properties, "key" and "value" both have an
+        // Identifier with the same structure.
+        const parent = path.parent.node;
+        if (j.Property.check(parent) && parent.shorthand && !parent.method) {
+          path.parent.get('shorthand').replace(false);
+        }
+
+        path.get('name').replace(newName);
+      });
+
+    // rename the param declaration
+    param.name = newName;
+  }
+
   const transformFunction = p => {
     const node = p.node;
 
@@ -122,6 +247,13 @@ module.exports = function transformer(file, api) {
     let awaition;
     if (callBack.params) {
       if (callBack.params.length > 0) {
+        const namesInScope = getNames(p);
+        for (const param of callBack.params) {
+          const name = getUniqueName(namesInScope, param);
+          if (name && name !== param.name) {
+            renameParam(p, callBack.body, param, name);
+          }
+        }
         awaition = utils.genAwaitionDeclarator(
           j,
           callBack.params,

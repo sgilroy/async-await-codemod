@@ -48,7 +48,7 @@ function countUserVotes(userIds) {
   });
 }
 
-function detructure(key) {
+function destructure(key) {
   return asyncFunc().then(({ [key]: result }) => {
     return result * 3;
   });
@@ -184,5 +184,50 @@ function returnUndefinedChained() {
 function spread() {
   return b().spread((c, d) => {
     return c(d).e;
+  });
+}
+
+function conflictingVariableName() {
+  const c = 'first';
+  return b().then(c => {
+    return c.d;
+  });
+}
+
+function conflictingVariableNames() {
+  const c = 'first';
+  return b().then(c => {
+    // second
+    return c.second().then(c => {
+        // third
+        return c.third();
+      });
+  });
+}
+
+function conflictingVariableNamesWithShadowParam() {
+  const c = 'first';
+  return b().then(c => {
+    // second
+    return c.second().then(c => {
+        // third
+        return c.third(c => {
+          c.other();
+        });
+      });
+  });
+}
+
+function conflictingVariableNamesWithShadowDeclaration() {
+  const c = 'first';
+  return b().then(c => {
+    // second
+    return c.second().then(c => {
+        // third
+        return c.third(() => {
+          const c = get();
+          c.other();
+        });
+      });
   });
 }
