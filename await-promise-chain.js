@@ -50,7 +50,7 @@ module.exports = function transformer(file, api) {
 
     // Create await statement
     let firstAwaition;
-    if (callBack.params.length > 0) {
+    if (callBack.params && callBack.params.length > 0) {
       firstAwaition = utils.genAwaitionDeclarator(
         j,
         callBack.params,
@@ -63,15 +63,19 @@ module.exports = function transformer(file, api) {
     }
 
     let callbackStatements;
-    if (callBack.body.type === 'BlockStatement') {
+    if (callBack.body && callBack.body.type === 'BlockStatement') {
       callbackStatements = callBack.body.body;
       firstAwaition.comments = bodyStatement.comments;
       if (callbackStatements.length > 0) {
         bodyStatement.comments =
           callbackStatements[callbackStatements.length - 1].comments;
       }
-    } else {
+    } else if (callBack.body) {
       callbackStatements = [j.returnStatement(callBack.body)];
+    } else {
+      // eslint-disable-next-line no-console
+      console.log('no callBack.body at', callBack.loc.start);
+      return;
     }
 
     // Transform return of callback
