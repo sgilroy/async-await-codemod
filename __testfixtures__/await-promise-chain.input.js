@@ -117,3 +117,18 @@ async function awaitConditionalReturn() {
       return client.put('/coach/' + coach.id);
     });
 }
+
+async function awaitSync() {
+  const self = this;
+
+  await Factory.create('patient')
+    .then(function (patient) {
+      self.patient = patient;
+    })
+    .then(async function () {
+      const device = await Factory.create('mobile_device', {_user: self.patient});
+      self.device = device;
+    });
+
+  pushEvents.configure();
+}

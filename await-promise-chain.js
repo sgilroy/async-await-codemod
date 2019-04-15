@@ -137,7 +137,9 @@ module.exports = function transformer(file, api) {
 
       // transform the existing await expression using the return of the then callback
       awaitExpression.argument = lastExpArgument;
-      tryStatements.push(bodyStatement);
+      if (returnLast) {
+        tryStatements.push(bodyStatement);
+      }
     }
     blockStatement.body = errorCallBack
       ? [

@@ -109,3 +109,14 @@ async function awaitConditionalReturn() {
   }
   return await client.put('/coach/' + coach.id);
 }
+
+async function awaitSync() {
+  const self = this;
+
+  const patient = await Factory.create('patient');
+  self.patient = patient;
+  const device = await Factory.create('mobile_device', {_user: self.patient});
+  self.device = device;
+
+  pushEvents.configure();
+}
