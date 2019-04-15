@@ -83,3 +83,27 @@ async function conflictingVariableNamesWithShadowDeclaration() {
       });
   });
 }
+
+async function conflictingSpreadDeclaration() {
+  console.log('before');
+
+  // comment about b
+  const e = await b().spread((req, e) => {
+    // comment before using e
+    return e.d(req);
+  });
+
+  return 'end with ' + e;
+}
+
+async function conflictingDestructuredSpreadDeclaration() {
+  console.log('before');
+
+  // comment about b
+  const [req, e] = await b().spread((req, e) => {
+    // comment before using e
+    return e.d(req);
+  });
+
+  return 'end with ' + e + req.id();
+}
