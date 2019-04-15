@@ -197,6 +197,7 @@ module.exports = function transformer(file, api) {
         break;
       }
 
+      somethingTransformed = false;
       paths.forEach(path => {
         if (transformFunction(path)) {
           somethingTransformed = true;
