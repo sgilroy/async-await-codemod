@@ -48,3 +48,24 @@ async function returnUndefinedChained() {
   const undefinedParam = await b().then(() => {});
   return c(undefinedParam);
 }
+
+async function awaitExpression() {
+  await Factory.create('coach', {})
+    .then(coach => {
+      return client.put('/coach/' + coach.id);
+    });
+}
+
+async function returnAwaitExpression() {
+  return await Factory.create('coach', {})
+    .then(coach => {
+      return client.put('/coach/' + coach.id);
+    });
+}
+
+async function returnAwaitExpressionSync() {
+  return await Factory.create('coach', {})
+    .then(coach => {
+      sync(coach);
+    });
+}

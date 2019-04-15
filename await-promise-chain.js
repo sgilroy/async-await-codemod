@@ -4,10 +4,32 @@ module.exports = function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
 
+  /**
+   * Looks at each body statement of the node and returns the body statement and
+   * inner await expression if the await is on a nested promise with a .then callback
+   * @param p The path to check
+   * @return {{awaitExpression: StatementTypes.expression, bodyStatement}}
+   */
   const containsAwaitOnPromise = p => {
     for (let bodyStatement of p.node.body) {
       let awaitExpression;
-      if (bodyStatement.type === 'AwaitExpression') {
+      if (
+        bodyStatement.type === 'ReturnStatement' &&
+        bodyStatement.argument.type === 'AwaitExpression'
+      ) {
+        awaitExpression = bodyStatement.argument;
+        if (utils.isPromiseCall(awaitExpression.argument)) {
+          return {bodyStatement, awaitExpression};
+        }
+      } else if (
+        bodyStatement.type === 'ExpressionStatement' &&
+        bodyStatement.expression.type === 'AwaitExpression'
+      ) {
+        awaitExpression = bodyStatement.expression;
+        if (utils.isPromiseCall(awaitExpression.argument)) {
+          return {bodyStatement, awaitExpression};
+        }
+      } else if (bodyStatement.type === 'AwaitExpression') {
         awaitExpression = bodyStatement;
         if (utils.isPromiseCall(awaitExpression.argument)) {
           return {bodyStatement, awaitExpression};
@@ -81,20 +103,7 @@ module.exports = function transformer(file, api) {
     // Transform return of callback
     const lastExp = callbackStatements[callbackStatements.length - 1];
     // if lastExp is a return, use the argument
-    const lastExpArgument =
-      lastExp && (lastExp.expression || lastExp.argument || lastExp);
-    if (!lastExpArgument) {
-      // eslint-disable-next-line no-console
-      console.log(
-        'no return expression',
-        node.type,
-        lastExp ? lastExp.loc : callBack.loc
-      );
-      return;
-    }
-
-    // transform the existing await expression using the return of the then callback
-    awaitExpression.argument = lastExpArgument;
+    const returnLast = lastExp && lastExp.type === 'ReturnStatement';
 
     let bodyStatements = blockStatement.body;
     if (!bodyStatements) {
@@ -106,9 +115,28 @@ module.exports = function transformer(file, api) {
     const rest = bodyStatements.slice(expressionIndex + 1);
     const tryStatements = [
       firstAwaition,
-      ...callbackStatements.slice(0, callbackStatements.length - 1),
-      bodyStatement
+      ...(returnLast
+        ? callbackStatements.slice(0, callbackStatements.length - 1)
+        : callbackStatements)
     ];
+    if (returnLast || bodyStatement.type !== 'ReturnStatement') {
+      const lastExpArgument =
+        lastExp && (lastExp.expression || lastExp.argument || lastExp);
+      if (!lastExpArgument) {
+        // example: const p = await b().then(() => {})
+        // eslint-disable-next-line no-console
+        console.log(
+          'no return expression',
+          node.type,
+          lastExp ? lastExp.loc.start : callBack.loc.start
+        );
+        return;
+      }
+
+      // transform the existing await expression using the return of the then callback
+      awaitExpression.argument = lastExpArgument;
+      tryStatements.push(bodyStatement);
+    }
     blockStatement.body = errorCallBack
       ? [
           ...prior,
@@ -139,6 +167,7 @@ module.exports = function transformer(file, api) {
         break;
       }
 
+      somethingTransformed = false;
       paths.forEach(path => {
         if (transformExpression(path)) {
           somethingTransformed = true;
