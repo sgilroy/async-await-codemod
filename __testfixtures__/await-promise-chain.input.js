@@ -107,3 +107,13 @@ async function conflictingDestructuredSpreadDeclaration() {
 
   return 'end with ' + e + req.id();
 }
+
+async function awaitConditionalReturn() {
+  return await Factory.create('coach', {})
+    .then(coach => {
+      if (!coach.good) {
+        return;
+      }
+      return client.put('/coach/' + coach.id);
+    });
+}

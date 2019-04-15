@@ -101,3 +101,11 @@ async function conflictingDestructuredSpreadDeclaration() {
 
   return 'end with ' + e + req.id();
 }
+
+async function awaitConditionalReturn() {
+  const coach = await Factory.create('coach', {});
+  if (!coach.good) {
+    return;
+  }
+  return await client.put('/coach/' + coach.id);
+}

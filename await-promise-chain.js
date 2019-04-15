@@ -15,6 +15,7 @@ module.exports = function transformer(file, api) {
       let awaitExpression;
       if (
         bodyStatement.type === 'ReturnStatement' &&
+        bodyStatement.argument &&
         bodyStatement.argument.type === 'AwaitExpression'
       ) {
         awaitExpression = bodyStatement.argument;
