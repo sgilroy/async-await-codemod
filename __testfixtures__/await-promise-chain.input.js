@@ -69,3 +69,17 @@ async function returnAwaitExpressionSync() {
       sync(coach);
     });
 }
+
+async function conflictingVariableNamesWithShadowDeclaration() {
+  const c = 'first';
+  return await b().then(c => {
+    // second
+    return c.second().then(c => {
+        // third
+        return c.third(() => {
+          const c = get();
+          c.other();
+        });
+      });
+  });
+}

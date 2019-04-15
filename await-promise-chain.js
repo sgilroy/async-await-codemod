@@ -73,6 +73,7 @@ module.exports = function transformer(file, api) {
     // Create await statement
     let firstAwaition;
     if (callBack.params && callBack.params.length > 0) {
+      utils.resolveParamNameConflicts(j, p, callBack);
       firstAwaition = utils.genAwaitionDeclarator(
         j,
         callBack.params,

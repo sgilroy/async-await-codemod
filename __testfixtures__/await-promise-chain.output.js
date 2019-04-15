@@ -63,3 +63,17 @@ async function returnAwaitExpressionSync() {
   const coach = await Factory.create('coach', {});
   sync(coach);
 }
+
+async function conflictingVariableNamesWithShadowDeclaration() {
+  const c = 'first';
+  const c2 = await b();
+
+  // second
+  const c3 = await c2.second();
+
+  // third
+  return await c3.third(() => {
+    const c = get();
+    c.other();
+  });
+}
