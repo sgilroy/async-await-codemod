@@ -1,5 +1,12 @@
 const utils = require('./lib/utils');
 
+const DEFAULT_ERROR_NODE = {
+  type: 'Identifier',
+  name: 'error',
+  optional: false,
+  typeAnnotation: null
+};
+
 module.exports = function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
@@ -170,10 +177,11 @@ module.exports = function transformer(file, api) {
             j.tryStatement(
               j.blockStatement(tryStatements),
               j.catchClause(
-                errorCallBack.params[0],
+                errorCallBack.params[0] || DEFAULT_ERROR_NODE,
                 null,
                 errorCallBack.type === 'ArrowFunctionExpression' &&
-                errorCallBack.body.type === 'CallExpression'
+                (errorCallBack.body.type === 'CallExpression' ||
+                  errorCallBack.body.type === 'Literal')
                   ? j.blockStatement([j.returnStatement(errorCallBack.body)])
                   : j.blockStatement(errorCallBack.body.body)
               )
