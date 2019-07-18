@@ -250,3 +250,14 @@ const arrowNullError = async val => {
     return err.message;
   }
 };
+
+class Foo {
+  async a() {
+    try {
+      const c = await b();
+      return c && c.d;
+    } catch (err) {
+      return err;
+    }
+  }
+}

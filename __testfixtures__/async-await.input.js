@@ -238,3 +238,9 @@ function thenTrueCatchFalse() {
 
 const arrowNullError = val =>
   a.b(val).then(() => null).catch(err => err.message);
+
+class Foo {
+  a() {
+    return b().then(c => c && c.d).catch(err => err);
+  }
+}
