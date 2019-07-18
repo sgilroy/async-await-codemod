@@ -261,3 +261,15 @@ class Foo {
     }
   }
 }
+
+class Bar extends Base {
+  async a(...args) {
+    try {
+      this.ready(true);
+      await Promise.resolve(this.run(args));
+      return this.ok && this.ready(false);
+    } catch (error) {
+      return this.ok && this.ready(false);
+    }
+  }
+}

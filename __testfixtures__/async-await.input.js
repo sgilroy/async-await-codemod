@@ -244,3 +244,12 @@ class Foo {
     return b().then(c => c && c.d).catch(err => err);
   }
 }
+
+class Bar extends Base {
+  a(...args) {
+    this.ready(true);
+    return Promise.resolve(this.run(args))
+      .then(() => this.ok && this.ready(false))
+      .catch(() => this.ok && this.ready(false));
+  }
+}
