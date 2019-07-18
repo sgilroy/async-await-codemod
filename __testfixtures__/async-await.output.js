@@ -241,3 +241,12 @@ async function thenTrueCatchFalse() {
     return false;
   }
 }
+
+const arrowNullError = async val => {
+  try {
+    await a.b(val);
+    return null;
+  } catch (err) {
+    return err.message;
+  }
+};

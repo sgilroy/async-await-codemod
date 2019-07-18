@@ -181,7 +181,8 @@ module.exports = function transformer(file, api) {
                 null,
                 errorCallBack.type === 'ArrowFunctionExpression' &&
                 (errorCallBack.body.type === 'CallExpression' ||
-                  errorCallBack.body.type === 'Literal')
+                  errorCallBack.body.type === 'Literal' ||
+                  errorCallBack.body.type === 'MemberExpression')
                   ? j.blockStatement([j.returnStatement(errorCallBack.body)])
                   : j.blockStatement(errorCallBack.body.body)
               )

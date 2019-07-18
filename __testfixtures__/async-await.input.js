@@ -235,3 +235,6 @@ function conflictingVariableNamesWithShadowDeclaration() {
 function thenTrueCatchFalse() {
   return b().then(c => true).catch(() => false);
 }
+
+const arrowNullError = val =>
+  a.b(val).then(() => null).catch(err => err.message);
