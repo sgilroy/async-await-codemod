@@ -210,8 +210,13 @@ module.exports = function transformer(file, api) {
 
       somethingTransformed = false;
       paths.forEach(path => {
-        if (transformFunction(path)) {
-          somethingTransformed = true;
+        try {
+          if (transformFunction(path)) {
+            somethingTransformed = true;
+          }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('unexpected error', e);
         }
       });
     } while (somethingTransformed && iterations < iterationsLimit);

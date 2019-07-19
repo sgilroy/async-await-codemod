@@ -239,17 +239,24 @@ function thenTrueCatchFalse() {
 const arrowNullError = val =>
   a.b(val).then(() => null).catch(err => err.message);
 
-class Foo {
+class SimpleClass {
   a() {
     return b().then(c => c && c.d).catch(err => err);
   }
 }
 
-class Bar extends Base {
+class ExtendedClass extends Base {
   a(...args) {
     this.ready(true);
     return Promise.resolve(this.run(args))
       .then(() => this.ok && this.ready(false))
       .catch(() => this.ok && this.ready(false));
+  }
+}
+
+class TwoPromises {
+  a() {
+    b().then(() => f(1));
+    c().then(() => f(2));
   }
 }

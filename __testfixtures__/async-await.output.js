@@ -251,7 +251,7 @@ const arrowNullError = async val => {
   }
 };
 
-class Foo {
+class SimpleClass {
   async a() {
     try {
       const c = await b();
@@ -262,7 +262,7 @@ class Foo {
   }
 }
 
-class Bar extends Base {
+class ExtendedClass extends Base {
   async a(...args) {
     try {
       this.ready(true);
@@ -271,5 +271,13 @@ class Bar extends Base {
     } catch (error) {
       return this.ok && this.ready(false);
     }
+  }
+}
+
+class TwoPromises {
+  async a() {
+    b().then(() => f(1));
+    await c();
+    return f(2);
   }
 }
