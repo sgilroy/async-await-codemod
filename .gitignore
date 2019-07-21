@@ -1,6 +1,7 @@
 node_modules
 yarn.lock
 .vscode/*
+.npmrc
 
 # IntelliJ IDEA
 .idea/
