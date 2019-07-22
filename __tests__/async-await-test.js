@@ -73,4 +73,76 @@ describe('async-await', () => {
       }
     );
   });
+
+  describe('await result should avoid param name conflict', function() {
+    defineTestFromFunctions(
+      () => {
+        function paramNameConflict(category) {
+          return category.get().then(function(category) {
+            return category.name;
+          });
+        }
+      },
+      () => {
+        async function paramNameConflict(category) {
+          const category2 = await category.get();
+          return category2.name;
+        }
+      }
+    );
+  });
+
+  describe('await result should avoid unpacked param name conflict', function() {
+    defineTestFromFunctions(
+      () => {
+        function paramNameConflict({category}) {
+          return category.get().then(function(category) {
+            return category.name;
+          });
+        }
+      },
+      () => {
+        async function paramNameConflict({category}) {
+          const category2 = await category.get();
+          return category2.name;
+        }
+      }
+    );
+  });
+
+  describe('await result should avoid unpacked nested param name conflict', function() {
+    defineTestFromFunctions(
+      () => {
+        function paramNameConflict({results: {category}}) {
+          return category.get().then(function(category) {
+            return category.name;
+          });
+        }
+      },
+      () => {
+        async function paramNameConflict({results: {category}}) {
+          const category2 = await category.get();
+          return category2.name;
+        }
+      }
+    );
+  });
+
+  describe('await result should avoid unpacked nested renamed param name conflict', function() {
+    defineTestFromFunctions(
+      () => {
+        function paramNameConflict({results: {original: category}}) {
+          return category.get().then(function(category) {
+            return category.name;
+          });
+        }
+      },
+      () => {
+        async function paramNameConflict({results: {original: category}}) {
+          const category2 = await category.get();
+          return category2.name;
+        }
+      }
+    );
+  });
 });
