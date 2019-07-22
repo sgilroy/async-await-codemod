@@ -171,22 +171,21 @@ module.exports = function transformer(file, api) {
       awaition,
       ...rest
     ];
+
+    const errorParam =
+      errorCallBack &&
+      ((errorCallBack.params && errorCallBack.params[0]) || DEFAULT_ERROR_NODE);
     p.node.body = j.blockStatement(
       errorCallBack
         ? [
             j.tryStatement(
               j.blockStatement(tryStatements),
               j.catchClause(
-                errorCallBack.params[0] || DEFAULT_ERROR_NODE,
+                errorParam,
                 null,
-                errorCallBack.type === 'ArrowFunctionExpression' &&
-                (errorCallBack.body.type === 'CallExpression' ||
-                  errorCallBack.body.type === 'Literal' ||
-                  errorCallBack.body.type === 'MemberExpression' ||
-                  errorCallBack.body.type === 'Identifier' ||
-                  errorCallBack.body.type === 'LogicalExpression')
-                  ? j.blockStatement([j.returnStatement(errorCallBack.body)])
-                  : j.blockStatement(errorCallBack.body.body)
+                j.blockStatement(
+                  getRestFromCallBack(errorCallBack, lastExp, errorParam.name)
+                )
               )
             )
           ]

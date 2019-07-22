@@ -145,4 +145,48 @@ describe('async-await', () => {
       }
     );
   });
+
+  describe('returned rejection handler as identifier', function() {
+    defineTestFromFunctions(
+      () => {
+        function thenFulfilledRejected() {
+          return b().then(c => {
+            return c.d;
+          }, callback);
+        }
+      },
+      () => {
+        async function thenFulfilledRejected() {
+          try {
+            const c = await b();
+            return c.d;
+          } catch (error) {
+            return callback(error);
+          }
+        }
+      }
+    );
+  });
+
+  describe('non-returned rejection handler as identifier', function() {
+    defineTestFromFunctions(
+      () => {
+        function thenFulfilledRejected() {
+          b().then(c => {
+            return c.d;
+          }, callback);
+        }
+      },
+      () => {
+        async function thenFulfilledRejected() {
+          try {
+            const c = await b();
+            return c.d;
+          } catch (error) {
+            callback(error);
+          }
+        }
+      }
+    );
+  });
 });
