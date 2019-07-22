@@ -35,26 +35,6 @@ module.exports = function transformer(file, api) {
     return utils.isPromiseCall(node.body);
   };
 
-  const funcContainsPromiseExpressionStatement = p => {
-    const fnStatementsArray = p.node.body.body;
-
-    for (let i = 0; i <= fnStatementsArray.length; i++) {
-      const statement = fnStatementsArray[i];
-
-      if (
-        statement &&
-        statement.expression &&
-        statement.expression.type === 'CallExpression' &&
-        statement.expression.callee.property &&
-        (statement.expression.callee.property.name === 'then' ||
-          statement.expression.callee.property.name === 'spread')
-      ) {
-        // mark function as containing a Promise Expression
-        return true;
-      }
-    }
-  };
-
   const getRestFromCallBack = (callBack, lastExp, resultIdentifierName) => {
     let rest;
     if (!callBack.body) {
@@ -110,6 +90,9 @@ module.exports = function transformer(file, api) {
     // if lastExp is a return, use the argument
     const callExp = lastExp.expression || lastExp.argument || lastExp;
     if (!callExp) {
+      // the lack of any statements in fulfilled handler is unusual but
+      // might be intentional
+
       // eslint-disable-next-line no-console
       console.log('no return expression', node.type, lastExp.loc);
       return;
@@ -209,24 +192,17 @@ module.exports = function transformer(file, api) {
 
       somethingTransformed = false;
       paths.forEach(path => {
-        try {
-          if (transformFunction(path)) {
-            somethingTransformed = true;
-          }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error('unexpected error', e);
+        if (transformFunction(path)) {
+          somethingTransformed = true;
         }
       });
     } while (somethingTransformed && iterations < iterationsLimit);
   };
 
   replaceType(j.FunctionDeclaration);
-  replaceType(j.FunctionDeclaration, funcContainsPromiseExpressionStatement);
 
   replaceType(j.ArrowFunctionExpression, arrowReturnsPromise);
 
-  replaceType(j.FunctionExpression, funcContainsPromiseExpressionStatement);
   replaceType(j.FunctionExpression);
 
   // TODO: cover more async/await cases

@@ -99,22 +99,6 @@ app.get("/with-return", function(req, res) {
   });
 });
 
-app.get("/without-return", function(req, res) {
-  requestPromise(generateBeefFreeRecipeURL()).then(function(recipeResponse) {
-    const recipesList = JSON.parse(recipeResponse).results;
-    const recipe = recipesList[0];
-    const responseText = `<pre>${
-      cowsay.say({
-        text: recipe.title
-      })
-    }</pre>`;
-
-    res.send(responseText);
-  }, function(error) {
-    console.log(error);
-  });
-});
-
 function blurImageData(imageData, radius) {
   const { height, width } = imageData;
 
@@ -251,12 +235,5 @@ class ExtendedClass extends Base {
     return Promise.resolve(this.run(args))
       .then(() => this.ok && this.ready(false))
       .catch(() => this.ok && this.ready(false));
-  }
-}
-
-class TwoPromises {
-  a() {
-    b().then(() => f(1));
-    c().then(() => f(2));
   }
 }

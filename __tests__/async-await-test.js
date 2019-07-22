@@ -47,6 +47,26 @@ describe('async-await', () => {
     );
   });
 
+  describe('then not returned should not transform', function() {
+    // transforming to async/await would change the behavior of the function
+    defineTestFromFunctions(
+      () => {
+        function a() {
+          b().then(c => {
+            return c.d;
+          });
+        }
+      },
+      () => {
+        function a() {
+          b().then(c => {
+            return c.d;
+          });
+        }
+      }
+    );
+  });
+
   describe('then with rejection handler', function() {
     defineTestFromFunctions(
       () => {
@@ -168,7 +188,7 @@ describe('async-await', () => {
     );
   });
 
-  describe('non-returned rejection handler as identifier', function() {
+  describe('non-returned rejection handler should not transform', function() {
     defineTestFromFunctions(
       () => {
         function thenFulfilledRejected() {
@@ -178,13 +198,113 @@ describe('async-await', () => {
         }
       },
       () => {
-        async function thenFulfilledRejected() {
-          try {
-            const c = await b();
+        function thenFulfilledRejected() {
+          b().then(c => {
             return c.d;
-          } catch (error) {
-            callback(error);
+          }, callback);
+        }
+      }
+    );
+  });
+
+  describe('two unchained promises', function() {
+    defineTestFromFunctions(
+      () => {
+        class TwoPromises {
+          a() {
+            b().then(() => f(1));
+            c().then(() => f(2));
           }
+        }
+      },
+      () => {
+        class TwoPromises {
+          a() {
+            b().then(() => f(1));
+            c().then(() => f(2));
+          }
+        }
+      }
+    );
+  });
+
+  describe('an unchained followed by a chained promise', function() {
+    defineTestFromFunctions(
+      () => {
+        class TwoPromises {
+          a() {
+            b().then(() => f(1));
+            return c().then(() => f(2));
+          }
+        }
+      },
+      () => {
+        class TwoPromises {
+          async a() {
+            b().then(() => f(1));
+            await c();
+            return f(2);
+          }
+        }
+      }
+    );
+  });
+
+  describe('statement after then', function() {
+    defineTestFromFunctions(
+      () => {
+        function a() {
+          b().then(() => f(1));
+          return f(2);
+        }
+      },
+      () => {
+        function a() {
+          b().then(() => f(1));
+          return f(2);
+        }
+      }
+    );
+  });
+
+  describe('no return expression', function() {
+    defineTestFromFunctions(
+      () => {
+        function countUserVotes(userIds) {
+          return getUsers(userIds).then(users => {
+            return Promise.reduce(users, (acc, user) => {
+              return user.getVoteCount().then(count => acc + count);
+            });
+          });
+        }
+      },
+      () => {
+        async function countUserVotes(userIds) {
+          const users = await getUsers(userIds);
+          return Promise.reduce(users, async (acc, user) => {
+            const count = await user.getVoteCount();
+            return acc + count;
+          });
+        }
+      }
+    );
+  });
+
+  describe('return undefined chained', function() {
+    defineTestFromFunctions(
+      () => {
+        function returnUndefinedChained() {
+          return b()
+            .then(() => {})
+            .then(undefinedParam => {
+              return c(undefinedParam);
+            });
+        }
+      },
+      () => {
+        async function returnUndefinedChained() {
+          const undefinedParam = await b().then(() => {});
+          return c(undefinedParam);
         }
       }
     );

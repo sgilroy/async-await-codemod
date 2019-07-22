@@ -99,23 +99,6 @@ app.get("/with-return", async function(req, res) {
   }
 });
 
-app.get("/without-return", async function(req, res) {
-  try {
-    const recipeResponse = await requestPromise(generateBeefFreeRecipeURL());
-    const recipesList = JSON.parse(recipeResponse).results;
-    const recipe = recipesList[0];
-    const responseText = `<pre>${
-      cowsay.say({
-        text: recipe.title
-      })
-    }</pre>`;
-
-    res.send(responseText);
-  } catch (error) {
-    console.log(error);
-  }
-});
-
 async function blurImageData(imageData, radius) {
   const { height, width } = imageData;
 
@@ -138,9 +121,8 @@ async function arrayDestructuring() {
   return destructuredArrayElement.d;
 }
 
-async function doesSomethingWithAPromise() {
-  const promiseResult = await promise;
-  doSomething(promiseResult);
+function doesSomethingWithAPromise() {
+  promise.then(doSomething);
 }
 
 async function returnsSomethingDone() {
@@ -271,13 +253,5 @@ class ExtendedClass extends Base {
     } catch (error) {
       return this.ok && this.ready(false);
     }
-  }
-}
-
-class TwoPromises {
-  async a() {
-    b().then(() => f(1));
-    await c();
-    return f(2);
   }
 }
