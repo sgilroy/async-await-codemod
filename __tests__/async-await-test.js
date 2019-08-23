@@ -188,6 +188,29 @@ describe('async-await', () => {
     );
   });
 
+  describe('block statements before try', function() {
+    defineTestFromFunctions(
+      () => {
+        function blockBefore() {
+          const pre = 1;
+          return a().then(something, callback);
+        }
+      },
+      () => {
+        async function blockBefore() {
+          const pre = 1;
+
+          try {
+            const aResult = await a();
+            return something(aResult);
+          } catch (error) {
+            return callback(error);
+          }
+        }
+      }
+    );
+  });
+
   describe('non-returned rejection handler should not transform', function() {
     defineTestFromFunctions(
       () => {

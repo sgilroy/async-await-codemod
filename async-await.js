@@ -149,11 +149,7 @@ module.exports = function transformer(file, api) {
     const rest = getRestFromCallBack(callBack, lastExp, resultIdentifierName);
 
     // Replace the function's body with the new content
-    const tryStatements = [
-      ...bodyStatements.slice(0, bodyStatements.length - 1),
-      awaition,
-      ...rest
-    ];
+    const tryStatements = [awaition, ...rest];
 
     const errorParam =
       errorCallBack &&
@@ -161,6 +157,7 @@ module.exports = function transformer(file, api) {
     p.node.body = j.blockStatement(
       errorCallBack
         ? [
+            ...bodyStatements.slice(0, bodyStatements.length - 1),
             j.tryStatement(
               j.blockStatement(tryStatements),
               j.catchClause(
@@ -172,7 +169,10 @@ module.exports = function transformer(file, api) {
               )
             )
           ]
-        : tryStatements
+        : [
+            ...bodyStatements.slice(0, bodyStatements.length - 1),
+            ...tryStatements
+          ]
     );
 
     return p.node;

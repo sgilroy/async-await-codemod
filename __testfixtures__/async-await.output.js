@@ -246,8 +246,9 @@ class SimpleClass {
 
 class ExtendedClass extends Base {
   async a(...args) {
+    this.ready(true);
+
     try {
-      this.ready(true);
       await Promise.resolve(this.run(args));
       return this.ok && this.ready(false);
     } catch (error) {
