@@ -35,7 +35,7 @@ module.exports = function transformer(file, api) {
     return utils.isPromiseCall(node.body);
   };
 
-  const getRestFromCallBack = (callBack, lastExp, resultIdentifierName) => {
+  const getRestFromCallBack = (p, callBack, lastExp, resultIdentifierName) => {
     let rest;
     if (!callBack.body) {
       const callBackCall = j.callStatement(callBack, [
@@ -50,6 +50,7 @@ module.exports = function transformer(file, api) {
       }
     } else if (callBack.body.type === 'BlockStatement') {
       rest = callBack.body.body;
+      utils.resolveNameConflicts(j, p, callBack.body);
     } else {
       rest = [j.returnStatement(callBack.body)];
     }
@@ -146,7 +147,12 @@ module.exports = function transformer(file, api) {
     }
     awaition.comments = leadingComments;
 
-    const rest = getRestFromCallBack(callBack, lastExp, resultIdentifierName);
+    const rest = getRestFromCallBack(
+      p,
+      callBack,
+      lastExp,
+      resultIdentifierName
+    );
 
     // Replace the function's body with the new content
     const tryStatements = [awaition, ...rest];
@@ -164,7 +170,12 @@ module.exports = function transformer(file, api) {
                 errorParam,
                 null,
                 j.blockStatement(
-                  getRestFromCallBack(errorCallBack, lastExp, errorParam.name)
+                  getRestFromCallBack(
+                    p,
+                    errorCallBack,
+                    lastExp,
+                    errorParam.name
+                  )
                 )
               )
             )

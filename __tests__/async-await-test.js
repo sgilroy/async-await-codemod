@@ -332,4 +332,80 @@ describe('async-await', () => {
       }
     );
   });
+
+  describe('then with shadow variable declaration', function() {
+    defineTestFromFunctions(
+      () => {
+        function a() {
+          const entry = 1;
+          return b(entry).then(c => {
+            const entry = 2;
+            return c.d(entry);
+          });
+        }
+      },
+      () => {
+        async function a() {
+          const entry = 1;
+          const c = await b(entry);
+          const entry2 = 2;
+          return c.d(entry2);
+        }
+      }
+    );
+  });
+
+  describe('then with shadow variable declaration and conflict for rename', function() {
+    defineTestFromFunctions(
+      () => {
+        function a() {
+          const entry = 1,
+            entry2 = 1.2;
+          return b(entry, entry2).then(c => {
+            const entry = 2;
+            return c.d(entry);
+          });
+        }
+      },
+      () => {
+        async function a() {
+          const entry = 1,
+            entry2 = 1.2;
+          const c = await b(entry, entry2);
+          const entry3 = 2;
+          return c.d(entry3);
+        }
+      }
+    );
+  });
+
+  describe('then with shadow function declaration', function() {
+    defineTestFromFunctions(
+      () => {
+        function a() {
+          function getEntry() {
+            return 1;
+          }
+          return b(getEntry()).then(c => {
+            function getEntry() {
+              return 2;
+            }
+            return c.d(getEntry());
+          });
+        }
+      },
+      () => {
+        async function a() {
+          function getEntry() {
+            return 1;
+          }
+          const c = await b(getEntry());
+          function getEntry2() {
+            return 2;
+          }
+          return c.d(getEntry2());
+        }
+      }
+    );
+  });
 });
