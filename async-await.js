@@ -41,7 +41,10 @@ module.exports = function transformer(file, api) {
       const callBackCall = j.callStatement(callBack, [
         j.identifier(resultIdentifierName)
       ]);
-      if (lastExp.type === 'ReturnStatement') {
+      if (callBack.type === 'Identifier' && callBack.name === 'undefined') {
+        // "return a().then(undefined)" becomes "await a()"
+        rest = [];
+      } else if (lastExp.type === 'ReturnStatement') {
         // "return promise.then(doSomething)" becomes "return doSomething(promiseResult)"
         rest = [j.returnStatement(callBackCall.expression)];
       } else {
@@ -122,6 +125,11 @@ module.exports = function transformer(file, api) {
       } else {
         awaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
       }
+    } else if (
+      callBack.type === 'Identifier' &&
+      callBack.name === 'undefined'
+    ) {
+      awaition = j.expressionStatement(j.awaitExpression(thenCalleeObject));
     } else {
       // no params (and no body), not an inline function, so we can't simply use the body of the callee (?)
       awaition = utils.genAwaitionDeclarator(

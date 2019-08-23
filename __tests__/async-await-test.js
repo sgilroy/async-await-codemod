@@ -408,4 +408,23 @@ describe('async-await', () => {
       }
     );
   });
+
+  describe('rejection handler defined but fulfilled handler undefined', function() {
+    defineTestFromFunctions(
+      () => {
+        function undefinedFulfilled() {
+          return a().then(undefined, callback);
+        }
+      },
+      () => {
+        async function undefinedFulfilled() {
+          try {
+            await a();
+          } catch (error) {
+            return callback(error);
+          }
+        }
+      }
+    );
+  });
 });
