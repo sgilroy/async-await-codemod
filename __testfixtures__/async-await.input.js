@@ -165,12 +165,6 @@ function returnUndefinedChained() {
   });
 }
 
-function spread() {
-  return b().spread((c, d) => {
-    return c(d).e;
-  });
-}
-
 function conflictingVariableName() {
   const c = 'first';
   return b().then(c => {

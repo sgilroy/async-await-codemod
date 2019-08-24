@@ -427,4 +427,38 @@ describe('async-await', () => {
       }
     );
   });
+
+  describe('spread to fulfilled handler that is an arrow function', function() {
+    defineTestFromFunctions(
+      () => {
+        function spread() {
+          return b().spread((c, d) => {
+            return c(d).e;
+          });
+        }
+      },
+      () => {
+        async function spread() {
+          const [c, d] = await b();
+          return c(d).e;
+        }
+      }
+    );
+  });
+
+  describe('spread to fulfilled handler that is an identifier', function() {
+    defineTestFromFunctions(
+      () => {
+        function spread() {
+          return b().spread(doSomething);
+        }
+      },
+      () => {
+        async function spread() {
+          const bResult = await b();
+          return doSomething(...bResult);
+        }
+      }
+    );
+  });
 });

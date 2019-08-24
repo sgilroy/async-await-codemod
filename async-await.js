@@ -39,7 +39,9 @@ module.exports = function transformer(file, api) {
     let rest;
     if (!callBack.body) {
       const callBackCall = j.callStatement(callBack, [
-        j.identifier(resultIdentifierName)
+        lastExp.argument.callee.property.name === 'spread'
+          ? j.spreadElement(j.identifier(resultIdentifierName))
+          : j.identifier(resultIdentifierName)
       ]);
       if (callBack.type === 'Identifier' && callBack.name === 'undefined') {
         // "return a().then(undefined)" becomes "await a()"

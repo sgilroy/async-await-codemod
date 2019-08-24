@@ -166,11 +166,6 @@ async function returnUndefinedChained() {
   return c(undefinedParam);
 }
 
-async function spread() {
-  const [c, d] = await b();
-  return c(d).e;
-}
-
 async function conflictingVariableName() {
   const c = 'first';
   const c2 = await b();
