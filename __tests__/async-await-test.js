@@ -112,6 +112,26 @@ describe('async-await', () => {
     );
   });
 
+  describe('await result from an array destructured param should avoid conflict', function() {
+    defineTestFromFunctions(
+      () => {
+        function a() {
+          const entry = getEntries();
+          return b(entry).then(([entry]) => {
+            return c.d(entry);
+          });
+        }
+      },
+      () => {
+        async function a() {
+          const entry = getEntries();
+          const [entry2] = await b(entry);
+          return c.d(entry2);
+        }
+      }
+    );
+  });
+
   describe('await result should avoid unpacked param name conflict', function() {
     defineTestFromFunctions(
       () => {
