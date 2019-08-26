@@ -121,6 +121,8 @@ module.exports = function transformer(file, api) {
         utils.resolveParamNameConflicts(j, p, callBack);
         awaition = utils.genAwaitionDeclarator(
           j,
+          callExp,
+          callBack,
           callBack.params,
           thenCalleeObject
         );
@@ -136,6 +138,8 @@ module.exports = function transformer(file, api) {
       // no params (and no body), not an inline function, so we can't simply use the body of the callee (?)
       awaition = utils.genAwaitionDeclarator(
         j,
+        callExp,
+        callBack,
         [j.identifier(resultIdentifierName)],
         thenCalleeObject
       );

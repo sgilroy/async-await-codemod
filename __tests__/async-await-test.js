@@ -466,6 +466,24 @@ describe('async-await', () => {
     );
   });
 
+  describe('spread of single param to fulfilled handler that is an arrow function', function() {
+    defineTestFromFunctions(
+      () => {
+        function spread() {
+          return b().spread(c => {
+            return c().d;
+          });
+        }
+      },
+      () => {
+        async function spread() {
+          const [c] = await b();
+          return c().d;
+        }
+      }
+    );
+  });
+
   describe('spread to fulfilled handler that is an identifier', function() {
     defineTestFromFunctions(
       () => {

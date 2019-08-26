@@ -77,6 +77,8 @@ module.exports = function transformer(file, api) {
       utils.resolveParamNameConflicts(j, p, callBack);
       firstAwaition = utils.genAwaitionDeclarator(
         j,
+        callExp,
+        callBack,
         callBack.params,
         thenCalleeObject
       );
