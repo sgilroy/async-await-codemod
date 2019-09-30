@@ -140,7 +140,13 @@ module.exports = function transformer(file, api) {
       // transform the existing await expression using the return of the then callback
       awaitExpression.argument = lastExpArgument;
       if (returnLast) {
-        tryStatements.push(bodyStatement);
+        let expressionStatement;
+        if (lastExpArgument.type === 'AssignmentExpression') {
+          expressionStatement = j.expressionStatement(lastExpArgument);
+        } else {
+          expressionStatement = bodyStatement;
+        }
+        tryStatements.push(expressionStatement);
       }
     }
     blockStatement.body = errorCallBack

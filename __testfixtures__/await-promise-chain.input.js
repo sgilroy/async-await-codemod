@@ -49,6 +49,11 @@ async function returnUndefinedChained() {
   return c(undefinedParam);
 }
 
+async function returnAssignmentChained() {
+  await b().then(p => (this.c = p.c));
+  return d(this.c);
+}
+
 async function awaitExpression() {
   await Factory.create('coach', {})
     .then(coach => {
@@ -72,6 +77,20 @@ async function returnAwaitExpressionSync() {
 
 async function conflictingVariableNamesWithShadowDeclaration() {
   const c = 'first';
+  return await b().then(c => {
+    // second
+    return c.second().then(c => {
+        // third
+        return c.third(() => {
+          const c = get();
+          c.other();
+        });
+      });
+  });
+}
+
+async function conflictingVariableNamesWithShadowDestructuredDeclaration() {
+  const [,c] = [1, 'first'];
   return await b().then(c => {
     // second
     return c.second().then(c => {
