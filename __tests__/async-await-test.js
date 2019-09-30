@@ -94,6 +94,122 @@ describe('async-await', () => {
     );
   });
 
+  describe('await result should avoid variable name conflict', function() {
+    defineTestFromFunctions(
+      () => {
+        function paramNameConflict() {
+          const category = new Category();
+          return category.get().then(function(category) {
+            return category.name;
+          });
+        }
+      },
+      () => {
+        async function paramNameConflict() {
+          const category = new Category();
+          const category2 = await category.get();
+          return category2.name;
+        }
+      }
+    );
+  });
+
+  describe('await result should avoid variable name conflict inside an anonymous function', function() {
+    defineTestFromFunctions(
+      () => {
+        it('test', function a() {
+          const category = new Category();
+          return category.get().then(function(category) {
+            return category.name;
+          });
+        });
+      },
+      () => {
+        it('test', async function a() {
+          const category = new Category();
+          const category2 = await category.get();
+          return category2.name;
+        });
+      }
+    );
+  });
+
+  describe('await result should avoid variable name conflict for an arrow function inside an anonymous function', function() {
+    defineTestFromFunctions(
+      `
+        it('test', function() {
+          const plan = new Plan();
+          return plan.save().then(() => {
+            return Factory.create('plan');
+          })
+          .then(plan => {
+            return Plan.update().then(() => {
+              return Plan.findById(plan).exec();
+            })
+            .then(plan => {
+              expect(plan.adherence_updated_at).to.equalTime(new Date());
+            });
+          });
+        });
+      `,
+      `
+        it('test', async function() {
+          const plan = new Plan();
+
+          const plan2 = await plan.save().then(() => {
+            return Factory.create('plan');
+          });
+
+          const plan3 = await Plan.update().then(() => {
+            return Plan.findById(plan2).exec();
+          });
+
+          expect(plan3.adherence_updated_at).to.equalTime(new Date());
+        });
+      `
+    );
+  });
+
+  // not supported yet
+  describe.skip('await result should avoid variable name conflict for an anonymous function inside an arrow function', function() {
+    defineTestFromFunctions(
+      () => {
+        it('test', () => {
+          const plan = new Plan();
+          return plan
+            .save()
+            .then(() => {
+              return Factory.create('plan');
+            })
+            .then(function(plan) {
+              return Plan.update()
+                .then(() => {
+                  return Plan.findById(plan).exec();
+                })
+                .then(function(plan) {
+                  expect(plan.adherence_updated_at).to.equalTime(new Date());
+                });
+            });
+        });
+      },
+      () => {
+        it('test', async () => {
+          const plan = new Plan();
+
+          const plan2 = await plan.save().then(() => {
+            return Factory.create('plan');
+          });
+
+          const plan3 = await Plan.update().then(() => {
+            return Plan.findById(plan2).exec();
+          });
+
+          expect(plan3.adherence_updated_at).to.equalTime(new Date());
+        });
+      }
+    );
+  });
+
   describe('await result from an array destructured param should avoid conflict', function() {
     defineTestFromFunctions(
       () => {
@@ -114,57 +230,78 @@ describe('async-await', () => {
     );
   });
 
-  describe('await result should avoid unpacked param name conflict', function() {
+  describe('await result from an array destructured param should avoid another destructured conflict', function() {
     defineTestFromFunctions(
       () => {
+        function a() {
+          return getEntries().then(([entry]) => {
+            return b(entry).then(([entry]) => {
+              return c.d(entry);
+            });
+          });
+        }
+      },
+      () => {
+        async function a() {
+          const [entry] = await getEntries();
+          const [entry2] = await b(entry);
+          return c.d(entry2);
+        }
+      }
+    );
+  });
+
+  describe('await result should avoid unpacked param name conflict', function() {
+    defineTestFromFunctions(
+      `
         function paramNameConflict({category}) {
           return category.get().then(function(category) {
             return category.name;
           });
         }
-      },
-      () => {
+      `,
+      `
         async function paramNameConflict({category}) {
           const category2 = await category.get();
           return category2.name;
         }
-      }
+      `
     );
   });
 
   describe('await result should avoid unpacked nested param name conflict', function() {
     defineTestFromFunctions(
-      () => {
+      `
         function paramNameConflict({results: {category}}) {
           return category.get().then(function(category) {
             return category.name;
           });
         }
-      },
-      () => {
+      `,
+      `
         async function paramNameConflict({results: {category}}) {
           const category2 = await category.get();
           return category2.name;
         }
-      }
+      `
     );
   });
 
   describe('await result should avoid unpacked nested renamed param name conflict', function() {
     defineTestFromFunctions(
-      () => {
+      `
         function paramNameConflict({results: {original: category}}) {
           return category.get().then(function(category) {
             return category.name;
           });
         }
-      },
-      () => {
+      `,
+      `
         async function paramNameConflict({results: {original: category}}) {
           const category2 = await category.get();
           return category2.name;
         }
-      }
+      `
     );
   });
 
@@ -383,7 +520,7 @@ describe('async-await', () => {
 
   describe('then with shadow function declaration', function() {
     defineTestFromFunctions(
-      () => {
+      `
         function a() {
           function getEntry() {
             return 1;
@@ -395,8 +532,8 @@ describe('async-await', () => {
             return c.d(getEntry());
           });
         }
-      },
-      () => {
+      `,
+      `
         async function a() {
           function getEntry() {
             return 1;
@@ -407,7 +544,7 @@ describe('async-await', () => {
           }
           return c.d(getEntry2());
         }
-      }
+      `
     );
   });
 

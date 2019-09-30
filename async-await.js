@@ -224,11 +224,11 @@ module.exports = function transformer(file, api) {
     } while (somethingTransformed && iterations < iterationsLimit);
   };
 
+  replaceType(j.FunctionExpression);
+
   replaceType(j.FunctionDeclaration);
 
   replaceType(j.ArrowFunctionExpression, arrowReturnsPromise);
-
-  replaceType(j.FunctionExpression);
 
   // TODO: cover more async/await cases
   // TODO: cover .then().finally()
