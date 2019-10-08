@@ -119,10 +119,12 @@ module.exports = function transformer(file, api) {
     if (callBack.params) {
       if (callBack.params.length > 0) {
         utils.resolveParamNameConflicts(j, p, callBack);
+        const kind = utils.getParamsDeclarationKind(j, p, callBack);
         awaition = utils.genAwaitionDeclarator(
           j,
           callExp,
           callBack,
+          kind,
           callBack.params,
           thenCalleeObject
         );
@@ -140,6 +142,7 @@ module.exports = function transformer(file, api) {
         j,
         callExp,
         callBack,
+        'const',
         [j.identifier(resultIdentifierName)],
         thenCalleeObject
       );

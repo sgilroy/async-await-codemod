@@ -29,6 +29,46 @@ describe('async-await', () => {
     );
   });
 
+  describe('should use let instead of const if parameter is reassigned', function() {
+    defineTestFromFunctions(
+      () => {
+        function a() {
+          return b().then(c => {
+            c = c.child;
+            return c.d;
+          });
+        }
+      },
+      () => {
+        async function a() {
+          let c = await b();
+          c = c.child;
+          return c.d;
+        }
+      }
+    );
+  });
+
+  describe('should use let instead of const if parameter is updated', function() {
+    defineTestFromFunctions(
+      () => {
+        function a() {
+          return b().then(c => {
+            c++;
+            return c;
+          });
+        }
+      },
+      () => {
+        async function a() {
+          let c = await b();
+          c++;
+          return c;
+        }
+      }
+    );
+  });
+
   describe('then not returned should not transform', function() {
     // transforming to async/await would change the behavior of the function
     defineTestFromFunctions(
