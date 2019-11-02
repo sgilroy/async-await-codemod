@@ -11,6 +11,33 @@ describe('await-promise-chain', () => {
     defineTest(__dirname, 'await-promise-chain');
   });
 
+  describe('simple chain', function() {
+    defineTestFromFunctions(
+      () => {
+        async function thenChain() {
+          console.log('before');
+
+          const e = await b().then(c => {
+            return c.d();
+          });
+
+          return 'end with ' + e;
+        }
+      },
+      () => {
+        async function thenChain() {
+          console.log('before');
+
+          const c = await b();
+
+          const e = await c.d();
+
+          return 'end with ' + e;
+        }
+      }
+    );
+  });
+
   describe('return assignment chained', function() {
     defineTestFromFunctions(
       () => {
@@ -24,6 +51,69 @@ describe('await-promise-chain', () => {
           const p = await b();
           this.c = p.c;
           return d(this.c);
+        }
+      }
+    );
+  });
+
+  describe.skip('transform variable declaration with conditional return', function() {
+    defineTestFromFunctions(
+      () => {
+        async function thenChain() {
+          console.log('before');
+
+          const e = await b().then(c => {
+            if (c) {
+              return c.d();
+            }
+          });
+
+          return 'end with ' + e;
+        }
+      },
+      () => {
+        async function thenChain() {
+          console.log('before');
+
+          const c = await b();
+
+          let e;
+          if (c) {
+            e = await c.d();
+          }
+
+          return 'end with ' + e;
+        }
+      }
+    );
+  });
+
+  describe('should not transform variable declaration with conditional return', function() {
+    defineTestFromFunctions(
+      () => {
+        async function thenChain() {
+          console.log('before');
+
+          const e = await b().then(c => {
+            if (c) {
+              return c.d();
+            }
+          });
+
+          return 'end with ' + e;
+        }
+      },
+      () => {
+        async function thenChain() {
+          console.log('before');
+
+          const e = await b().then(c => {
+            if (c) {
+              return c.d();
+            }
+          });
+
+          return 'end with ' + e;
         }
       }
     );

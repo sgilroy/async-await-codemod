@@ -50,6 +50,41 @@ module.exports = function transformer(file, api) {
     }
   };
 
+  function statementsContainReturnRecursive(statements) {
+    return statements.some(
+      statement =>
+        statement.type === 'ReturnStatement' ||
+        (statement.type === 'IfStatement' && containsReturnRecursive(statement))
+    );
+  }
+
+  function containsReturnRecursive(statement) {
+    return !!(
+      statementsContainReturnRecursive(statement.consequent.body) ||
+      (statement.alternate && statementsContainReturnRecursive(statement.alternate.body))
+    );
+  }
+
+  function containsConditionalReturn(callbackStatements) {
+    const lastStatement =
+      callbackStatements.length > 0 &&
+      callbackStatements[callbackStatements.length - 1];
+    return (
+      callbackStatements
+        .slice(0, callbackStatements.length - 1)
+        .some(statement => {
+          return (
+            statement.type === 'ReturnStatement' ||
+            (statement.type === 'IfStatement' &&
+              containsReturnRecursive(statement))
+          );
+        }) ||
+      (lastStatement &&
+        lastStatement.type === 'IfStatement' &&
+        containsReturnRecursive(lastStatement))
+    );
+  }
+
   const transformExpression = p => {
     const node = p.node;
 
@@ -103,6 +138,13 @@ module.exports = function transformer(file, api) {
     } else {
       // eslint-disable-next-line no-console
       console.log('no callBack.body at', callBack.loc.start);
+      return;
+    }
+
+    // detect a conditional return (any return prior to last), which is not currently supported
+    if (bodyStatement.type === 'VariableDeclaration' && containsConditionalReturn(callbackStatements)) {
+      // eslint-disable-next-line no-console
+      console.log('conditional return not supported', node.type, node.loc.start);
       return;
     }
 
