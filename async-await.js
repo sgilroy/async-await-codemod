@@ -104,6 +104,14 @@ module.exports = function transformer(file, api) {
       return;
     }
 
+    // Don't transform get x() {…} into async get x() {…}; that would generate invalid syntax
+    if (
+      p.parent.node.type === 'MethodDefinition' &&
+      (p.parent.node.kind === 'get' || p.parent.node.kind === 'set')
+    ) {
+      return;
+    }
+
     // Set function to async
     node.async = true;
 
