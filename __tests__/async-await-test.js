@@ -658,4 +658,26 @@ describe('async-await', () => {
       }
     );
   });
+
+  describe('es6 getter and setter should be unchanged', function() {
+    defineTestFromFunctions(
+      () => {
+        class A {
+          method() {return a().then(b => 'convert')}
+          get prop() {return a().then(b => 'getter')}
+          set prop(val) {return a(val).then(b => 'setter')}
+        }
+      },
+      () => {
+        class A {
+          async method() {
+            const b = await a();
+            return 'convert';
+          }
+          get prop() {return a().then(b => 'getter')}
+          set prop(val) {return a(val).then(b => 'setter')}
+        }
+      },
+    );
+  });
 });
